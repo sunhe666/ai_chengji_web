@@ -20,7 +20,7 @@ try {
 console.log('📊 系统已启动 - 专注轻量级核心分析功能，无Canvas依赖');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // AI配置 (可通过环境变量设置)
 const AI_CONFIG = {
@@ -1662,22 +1662,27 @@ async function generatePersonalRankingChart(student, data, chartCanvas) {
 }
 
 // 启动服务器
-app.listen(PORT, () => {
-  console.log(`🚀 成绩分析系统启动成功！`);
-  console.log(`📊 访问地址: http://localhost:${PORT}`);
-  console.log(`📄 现在支持数据导出和图表保存功能！`);
-  console.log(`💡 请在浏览器中打开上述地址查看应用界面`);
-  
-  // 检查public目录是否存在
-  const publicPath = path.join(__dirname, 'public');
-  if (!fs.existsSync(publicPath)) {
-    console.error(`❌ 错误: public 目录不存在于 ${publicPath}`);
-  } else {
-    const indexPath = path.join(publicPath, 'index.html');
-    if (!fs.existsSync(indexPath)) {
-      console.error(`❌ 错误: index.html 不存在于 ${indexPath}`);
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`🚀 成绩分析系统启动成功！`);
+    console.log(`📊 访问地址: http://localhost:${PORT}`);
+    console.log(`📄 现在支持数据导出和图表保存功能！`);
+    console.log(`💡 请在浏览器中打开上述地址查看应用界面`);
+    
+    // 检查public目录是否存在
+    const publicPath = path.join(__dirname, 'public');
+    if (!fs.existsSync(publicPath)) {
+      console.error(`❌ 错误: public 目录不存在于 ${publicPath}`);
     } else {
-      console.log(`✅ 静态文件配置正确`);
+      const indexPath = path.join(publicPath, 'index.html');
+      if (!fs.existsSync(indexPath)) {
+        console.error(`❌ 错误: index.html 不存在于 ${indexPath}`);
+      } else {
+        console.log(`✅ 静态文件配置正确`);
+      }
     }
-  }
-});
+  });
+}
+
+// 导出app供Vercel使用
+module.exports = app;
