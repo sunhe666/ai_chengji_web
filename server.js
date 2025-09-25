@@ -116,6 +116,7 @@ const upload = multer({
     } else {
       cb(new Error('只支持 Excel (.xlsx, .xls) 和 CSV 文件格式'));
     }
+
   },
   limits: {
     fileSize: 4 * 1024 * 1024, // 4MB (Vercel限制)
@@ -195,23 +196,25 @@ app.post('/upload', upload.single('gradeFile'), (req, res) => {
 
 // 获取分析数据
 app.get('/analysis', (req, res) => {
-  if (analysisData.students.length === 0) {
+  const currentData = global.lastAnalysisData;
+  if (!currentData || !currentData.students || currentData.students.length === 0) {
     return res.status(400).json({ error: '请先上传成绩文件' });
   }
 
-  const analysis = generateAnalysis(analysisData);
+  const analysis = generateAnalysis(currentData);
   res.json(analysis);
 });
 
 // 获取个人分析数据
 app.get('/personal-analysis/:studentId', (req, res) => {
   try {
-    if (analysisData.students.length === 0) {
+    const currentData = global.lastAnalysisData;
+    if (!currentData || !currentData.students || currentData.students.length === 0) {
       return res.status(400).json({ error: '请先上传成绩文件' });
     }
 
     const studentId = req.params.studentId;
-    const personalAnalysis = generatePersonalAnalysis(analysisData, studentId);
+    const personalAnalysis = generatePersonalAnalysis(currentData, studentId);
     
     if (!personalAnalysis) {
       return res.status(404).json({ error: '学生不存在' });
@@ -227,12 +230,13 @@ app.get('/personal-analysis/:studentId', (req, res) => {
 // 获取班级分析数据
 app.get('/class-analysis/:className', (req, res) => {
   try {
-    if (analysisData.students.length === 0) {
+    const currentData = global.lastAnalysisData;
+    if (!currentData || !currentData.students || currentData.students.length === 0) {
       return res.status(400).json({ error: '请先上传成绩文件' });
     }
 
-    const className = req.params.className;
-    const classAnalysis = generateClassAnalysis(analysisData, className);
+    const className = decodeURIComponent(req.params.className); // 解码URL参数
+    const classAnalysis = generateClassAnalysis(currentData, className);
     
     if (!classAnalysis) {
       return res.status(404).json({ error: '班级不存在' });
@@ -247,11 +251,12 @@ app.get('/class-analysis/:className', (req, res) => {
 
 // 获取学生列表
 app.get('/students', (req, res) => {
-  if (analysisData.students.length === 0) {
+  const currentData = global.lastAnalysisData;
+  if (!currentData || !currentData.students || currentData.students.length === 0) {
     return res.status(400).json({ error: '请先上传成绩文件' });
   }
 
-  const students = analysisData.students.map(student => ({
+  const students = currentData.students.map(student => ({
     id: student.id,
     name: student.name,
     class: student.class,
@@ -265,7 +270,8 @@ app.get('/students', (req, res) => {
 // AI分析接口
 app.post('/ai-analysis', async (req, res) => {
   try {
-    if (analysisData.students.length === 0) {
+    const currentData = global.lastAnalysisData;
+    if (!currentData || !currentData.students || currentData.students.length === 0) {
       return res.status(400).json({ error: '请先上传成绩文件' });
     }
 
@@ -286,11 +292,12 @@ app.post('/ai-analysis', async (req, res) => {
 // 获取AI分析建议
 app.get('/ai-suggestions', async (req, res) => {
   try {
-    if (analysisData.students.length === 0) {
+    const currentData = global.lastAnalysisData;
+    if (!currentData || !currentData.students || currentData.students.length === 0) {
       return res.status(400).json({ error: '请先上传成绩文件' });
     }
 
-    const suggestions = await generateAISuggestions(analysisData);
+    const suggestions = await generateAISuggestions(currentData);
     res.json(suggestions);
   } catch (error) {
     console.error('AI建议生成错误:', error);
@@ -394,11 +401,12 @@ app.post('/joint-analysis', (req, res) => {
   try {
     const { analysisType, subjects, classes } = req.body;
     
-    if (analysisData.students.length === 0) {
+    const currentData = global.lastAnalysisData;
+    if (!currentData || !currentData.students || currentData.students.length === 0) {
       return res.status(400).json({ error: '请先上传成绩文件' });
     }
 
-    const jointAnalysis = performJointAnalysis(analysisData, analysisType, subjects, classes);
+    const jointAnalysis = performJointAnalysis(currentData, analysisType, subjects, classes);
     res.json(jointAnalysis);
   } catch (error) {
     console.error('联表分析错误:', error);
