@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Analysis System - Installer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        
+        .installer {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 800px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .step-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .step-number {
+            background: #4CAF50;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .progress {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .success-box {
+            background: #d1edff;
+            border-left: 4px solid #0984e3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .actions {
+            padding: 20px 30px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .checklist li:before {
+            content: "⏳";
+            position: absolute;
+            left: 10px;
+            font-size: 18px;
+        }
+        
+        .checklist li.success:before {
+            content: "✅";
+        }
+        
+        .checklist li.error:before {
+            content: "❌";
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="installer">
+        <div class="header">
+            <h1>🎓 Grade Analysis System</h1>
+            <p>Simple Installation Guide</p>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 20%"></div>
+        </div>
+        
+        <div class="content">
+            <div class="step active" id="step1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h2>Install Dependencies</h2>
+                </div>
+                
+                <div class="info-box">
+                    <strong>📦 Install Options</strong>
+                    <br><br>
+                    <label style="display: flex; align-items: center; margin-bottom: 15px; cursor: pointer;">
+                        <input type="checkbox" id="includePdf" style="margin-right: 10px; transform: scale(1.2);">
+                        <span>
+                            <strong>Include PDF Generation</strong>
+                            <br><small style="color: #666;">Requires 150MB download, may be slow</small>
+                        </span>
+                    </label>
+                </div>
+                
+                <div id="installStatus"></div>
+                <div class="loading-spinner" style="display: none;" id="spinner"></div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <div>Step 1 of 1</div>
+            <button class="btn" onclick="startInstall()">Start Installation</button>
+        </div>
+    </div>
+
+    <script>
+        async function startInstall() {
+            const spinner = document.getElementById('spinner');
+            const status = document.getElementById('installStatus');
+            const includePdf = document.getElementById('includePdf').checked;
+            
+            spinner.style.display = 'block';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/install-dependencies', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ skipPdf: !includePdf })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    status.innerHTML = `
+                        <div class="success-box">
+                            <strong>✅ Installation Complete!</strong>
+                            <br>Starting application...
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        window.open('http://localhost:3001', '_blank');
+                    }, 2000);
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                status.innerHTML = `
+                    <div class="warning-box">
+                        <strong>⚠️ Installation Failed</strong>
+                        <br>${error.message}
+                        <br><br>
+                        <button class="btn" onclick="location.reload()">Try Again</button>
+                    </div>
+                `;
+            }
+            
+            spinner.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

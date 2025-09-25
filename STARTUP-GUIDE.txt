@@ -1,0 +1,78 @@
+🎓 Grade Analysis System - Startup Guide
+========================================
+
+📋 How to Start:
+
+【RECOMMENDED】start.bat
+  • Auto-detect Node.js installation
+  • Auto-install missing dependencies
+  • Install PDF support features
+  • Start server automatically
+  • Use when: First time or having issues
+
+【ALTERNATIVE】Traditional way
+  • Run auto-install-windows.bat first
+  • Then run test-startup.bat to start
+
+========================================
+
+📄 PDF Features:
+
+If you need complete PDF functionality:
+• Run install-pdf.bat
+
+PDF Features Include:
+• Professional reports with charts
+• A4 format, perfect for printing
+• Auto-include school logo and titles
+• Smart pagination and layout
+
+========================================
+
+🔧 Troubleshooting:
+
+【Path Error】Cannot find server.js:
+1. Make sure you run script in project root directory
+2. Use start.bat for automatic path detection
+
+【Other Issues】:
+1. Run start.bat first
+2. Check error messages
+3. For network issues, run network-fix.bat
+4. For dependencies, run install-pdf.bat
+
+Common Problems:
+• "Cannot find server.js" → Run in correct directory
+• Node.js not installed → Download from https://nodejs.org/
+• Port occupied → Close other programs using port 3001
+• Dependencies failed → Check network, run fix scripts
+
+========================================
+
+📍 Usage Flow:
+
+1. Double-click start.bat
+2. Wait for dependency check and installation
+3. See "Starting Server" message
+4. Open browser: http://localhost:3001
+5. Upload Excel/CSV files to analyze
+6. Generate and download PDF reports
+
+========================================
+
+💡 Key Features:
+
+✅ Excel and CSV file import
+✅ Auto-generate grade statistics charts
+✅ Smart identification of critical students
+✅ Professional PDF analysis reports
+✅ Personal and class report downloads
+✅ Complete data visualization
+
+========================================
+
+If you have problems, check:
+- Run with administrator privileges
+- Node.js is installed
+- Network connection is stable
+- Firewall allows port 3001

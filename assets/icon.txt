@@ -1,0 +1,7 @@
+这个文件夹包含应用图标文件
+图标文件应包括：
+- icon.ico (Windows图标)
+- icon.icns (Mac图标)  
+- icon.png (Linux图标)
+
+可以使用在线图标转换工具将PNG图标转换为不同格式。

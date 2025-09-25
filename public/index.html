@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能成绩分析系统</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-chart-line"></i>
+                <span>智能成绩分析系统</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-item active">首页</a>
+                <a href="#upload" class="nav-item">上传数据</a>
+                <a href="#analysis" class="nav-item">数据分析</a>
+                <a href="#personal" class="nav-item">个人分析</a>
+                <a href="#class" class="nav-item">班级分析</a>
+                <a href="#reports" class="nav-item">数据导出</a>
+                <div class="theme-switcher-nav">
+                    <select id="softThemeSwitcher" class="soft-theme-select">
+                        <option value="soft-blue">💙 淡蓝</option>
+                        <option value="soft-pink">💗 淡粉</option>
+                        <option value="soft-green">💚 淡绿</option>
+                        <option value="soft-purple">💜 淡紫</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="main-content">
+        <!-- 首页区域 -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1>智能成绩分析系统</h1>
+                    <p>专业的学生成绩数据分析平台，支持多维度数据分析、可视化展示和智能报告生成</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="navigateToSection('upload')">
+                            <i class="fas fa-upload"></i> 开始上传数据
+                        </button>
+                        <button class="btn btn-secondary" onclick="showDemo()">
+                            <i class="fas fa-play"></i> 查看演示
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-features">
+                    <div class="feature-card">
+                        <i class="fas fa-file-excel"></i>
+                        <h3>数据上传</h3>
+                        <p>支持Excel、CSV等多种格式的成绩数据导入</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>智能分析</h3>
+                        <p>多维度成绩分析，包括班级对比、科目相关性等</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>图表导出</h3>
+                        <p>右键保存图表，支持PNG格式</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 上传区域 -->
+        <section id="upload" class="section">
+            <div class="upload-container">
+                <div class="upload-header">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> 成绩数据上传</h2>
+                    <p>请上传包含学生成绩信息的Excel或CSV文件</p>
+                </div>
+
+                <div class="format-guide">
+                    <div class="guide-links">
+                        <a href="/DATA_FORMAT_GUIDE.md" target="_blank" class="guide-link">
+                            <i class="fas fa-book"></i> 数据格式指南
+                        </a>
+                        <a href="/sample-multi-class.csv" download class="guide-link">
+                            <i class="fas fa-download"></i> 多班级示例
+                        </a>
+                        <a href="/sample-single-class.csv" download class="guide-link">
+                            <i class="fas fa-download"></i> 单班级示例
+                        </a>
+                        <a href="/sample-with-rankings.csv" download class="guide-link">
+                            <i class="fas fa-trophy"></i> 多班级排名示例
+                        </a>
+                        <a href="/sample-single-class-with-rankings.csv" download class="guide-link">
+                            <i class="fas fa-medal"></i> 单班级排名示例
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-file-upload upload-icon"></i>
+                        <h3>拖拽文件到此处或点击选择文件</h3>
+                        <p>支持 .xlsx, .xls, .csv 格式文件</p>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            选择文件
+                        </button>
+                    </div>
+                </div>
+
+                <div class="upload-info" id="uploadInfo" style="display: none;">
+                    <h3>上传成功！</h3>
+                    <div class="info-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="studentCount">0</span>
+                            <span class="stat-label">学生人数</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="subjectCount">0</span>
+                            <span class="stat-label">科目数量</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="classCount">0</span>
+                            <span class="stat-label">班级数量</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="navigateToSection('analysis')">
+                        <i class="fas fa-chart-line"></i> 开始分析
+                    </button>
+                    <button class="btn btn-info" onclick="showTrackingManager()" style="margin-left: 10px;">
+                        <i class="fas fa-chart-line"></i> 个人成绩追踪
+                    </button>
+                </div>
+
+                <div class="upload-tips">
+                    <h4><i class="fas fa-lightbulb"></i> 数据格式说明</h4>
+                    <ul>
+                        <li>文件应包含学号、姓名、班级等基本信息</li>
+                        <li>科目成绩应为数字格式</li>
+                        <li>建议使用标准的表头命名，如"语文"、"数学"等</li>
+                        <li>文件大小建议不超过10MB</li>
+                    </ul>
+                    <div style="margin-top: 15px;">
+                        <h5><i class="fas fa-download"></i> 示例文件下载：</h5>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <button class="btn btn-sm" onclick="downloadSampleFile('sample-single-class.csv', '单班级成绩示例.csv')" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-file-csv"></i> 单班级示例
+                            </button>
+                            <button class="btn btn-sm" onclick="downloadSampleFile('sample-multi-class.csv', '多班级成绩示例.csv')" style="background: #4facfe; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-file-csv"></i> 多班级示例
+                            </button>
+                            <button class="btn btn-sm" onclick="downloadSampleFile('sample-with-rankings.csv', '带排名成绩示例.csv')" style="background: #43e97b; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-file-csv"></i> 带排名示例
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!-- 分析区域 -->
+        <section id="analysis" class="section">
+            <div class="analysis-container">
+                <div class="analysis-header">
+                    <h2><i class="fas fa-analytics"></i> 数据分析</h2>
+                    <div class="analysis-controls">
+                        <button class="btn btn-primary" onclick="refreshAnalysis()">
+                            <i class="fas fa-sync-alt"></i> 刷新数据
+                        </button>
+                        <button class="btn btn-info" onclick="showJointAnalysis()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; font-weight: bold; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                            <i class="fas fa-link"></i> 联表分析
+                        </button>
+                        <button class="btn btn-success" onclick="getAISuggestions()">
+                            <i class="fas fa-lightbulb"></i> 智能建议
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 智能分析结果 -->
+                <div class="analysis-insights" id="analysisInsights" style="display: none;">
+                    <div class="insights-header">
+                        <h3><i class="fas fa-brain"></i> 智能分析结果</h3>
+                        <button class="btn-close" onclick="closeAnalysisInsights()">×</button>
+                    </div>
+                    <div class="insights-content" id="insightsContent">
+                        <!-- AI分析结果将在这里显示 -->
+                    </div>
+                </div>
+
+                <div class="analysis-grid">
+                    <!-- 表格结构分析 -->
+                    <div class="analysis-card" id="tableAnalysisCard" style="display: none;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-table"></i> 表格结构分析</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="tableAnalysisContent">
+                                <!-- 表格分析结果 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 总体统计 -->
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-pie"></i> 总体统计</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="summary-stats" id="summaryStats">
+                                <div class="summary-item">
+                                    <span class="summary-value">0</span>
+                                    <span class="summary-label">学生总数</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-value">0</span>
+                                    <span class="summary-label">科目总数</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-value">0</span>
+                                    <span class="summary-label">班级总数</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 班级对比分析 -->
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> 班级对比分析</h3>
+                            <div class="chart-description">
+                                <p>对比不同班级的整体表现，支持选择两个班级进行详细对比分析</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <canvas id="classComparisonChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 及格率统计 -->
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-percentage"></i> 及格率统计</h3>
+                            <div class="chart-description">
+                                <p>显示各科目60分以上的及格率，帮助了解整体学习水平和需要重点关注的科目</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <canvas id="passRateChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 科目平均分 -->
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-bar"></i> 科目平均分及达成率</h3>
+                            <div class="chart-description">
+                                <p>显示各科目的平均分和达成率（60分以上比例），帮助识别优势科目和需要加强的科目</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <canvas id="subjectAverageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 详细数据表 -->
+                    <div class="analysis-card full-width">
+                        <div class="card-header">
+                            <h3><i class="fas fa-table"></i> 详细统计数据</h3>
+                            <div class="chart-description">
+                                <p>提供各科目的详细统计信息，包括平均分、最高分、最低分和及格率等关键指标</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="data-table-container">
+                                <table class="data-table" id="detailTable">
+                                    <thead>
+                                        <tr>
+                                            <th>科目</th>
+                                            <th>平均分</th>
+                                            <th>最高分</th>
+                                            <th>最低分</th>
+                                            <th>及格率</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detailTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 个人分析区域 -->
+        <section id="personal" class="section">
+            <div class="personal-container">
+                <div class="personal-header">
+                    <h2><i class="fas fa-user-graduate"></i> 个人成绩分析</h2>
+                    <div class="personal-controls">
+                        <button class="btn btn-primary" onclick="refreshPersonalAnalysis()">
+                            <i class="fas fa-sync-alt"></i> 刷新数据
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportPersonalReport()">
+                            <i class="fas fa-download"></i> 导出个人报告
+                        </button>
+                    </div>
+                </div>
+
+                <div class="personal-layout">
+                    <!-- 学生选择侧边栏 -->
+                    <div class="student-sidebar">
+                        <div class="sidebar-header">
+                            <h3><i class="fas fa-users"></i> 学生列表</h3>
+                            <div class="search-box">
+                                <input type="text" id="studentSearch" placeholder="搜索学生姓名..." onkeyup="filterStudents()">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                        <div class="class-filter">
+                            <select id="classFilter" onchange="filterByClass()">
+                                <option value="">所有班级</option>
+                            </select>
+                        </div>
+                        <div class="student-list" id="studentList">
+                            <!-- 学生列表将在这里动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 个人分析内容 -->
+                    <div class="personal-content">
+                        <div class="no-student-selected" id="noStudentSelected">
+                            <div class="empty-state">
+                                <i class="fas fa-user-circle"></i>
+                                <h3>请选择学生</h3>
+                                <p>从左侧列表中选择一名学生查看详细分析</p>
+                            </div>
+                        </div>
+
+                        <div class="personal-analysis" id="personalAnalysis" style="display: none;">
+                            <!-- 个人信息卡片 -->
+                            <div class="personal-info-card">
+                                <div class="student-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="student-details">
+                                    <h3 id="selectedStudentName">-</h3>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="label">学号:</span>
+                                            <span class="value" id="selectedStudentId">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">班级:</span>
+                                            <span class="value" id="selectedStudentClass">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">总分:</span>
+                                            <span class="value" id="selectedStudentTotal">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">平均分:</span>
+                                            <span class="value" id="selectedStudentAverage">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">班级排名:</span>
+                                            <span class="value" id="selectedStudentClassRank">-</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="label">年级排名:</span>
+                                            <span class="value" id="selectedStudentGradeRank">-</span>
+                                        </div>
+                                    </div>
+                                    <!-- 原始排名信息 -->
+                                    <div class="original-rankings" id="originalRankings" style="display: none;">
+                                        <h4><i class="fas fa-trophy"></i> 其他科目排名</h4>
+                                        <div class="rankings-grid" id="rankingsGrid">
+                                            <!-- 原始排名数据将动态显示 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- 个人分析图表 -->
+                            <div class="personal-charts-grid">
+                            <!-- 学科达成率弧形图 -->
+                            <div class="chart-card journal-chart">
+                                <h3 class="chart-title">学科达成率分析</h3>
+                                <div class="chart-description">
+                                    <p>显示各科目达成率，帮助识别学生的优势学科和需要加强的科目</p>
+                                </div>
+                                <div class="card-content arc-chart-container">
+                                    <canvas id="personalAchievementChart"></canvas>
+                                    <div class="arc-chart-center">
+                                        <p class="total-text" id="totalPassRate">0%</p>
+                                        <p class="total-label">整体达成率</p>
+                                    </div>
+                                </div>
+                                <div class="custom-legend" id="achievementLegend">
+                                    <!-- 图例将动态生成 -->
+                                </div>
+                            </div>
+
+                                <!-- 学科贡献比扇形图 -->
+                                <div class="chart-card">
+                                    <div class="card-header">
+                                        <h4><i class="fas fa-percentage"></i> 学科贡献比</h4>
+                                        <div class="chart-description">
+                                            <p>显示各科目在总分中的贡献比例，了解各科成绩对总分的贡献度</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-content">
+                                        <canvas id="personalContributionChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- 偏科分析雷达图 -->
+                                <div class="chart-card large">
+                                    <div class="card-header">
+                                        <h4><i class="fas fa-radar"></i> 偏科分析雷达图</h4>
+                                        <div class="chart-description">
+                                            <p>对比学生各科成绩与班级平均分，直观显示偏科情况和各科相对水平</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-content">
+                                        <canvas id="personalRadarChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- 成绩波动图 -->
+                                <div class="chart-card large">
+                                    <div class="card-header">
+                                        <h4><i class="fas fa-chart-line"></i> 个人学科成绩分布</h4>
+                                        <div class="chart-description">
+                                            <p>以柱状图形式展示各科成绩，便于快速比较各科表现和识别强弱科目</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-content">
+                                        <canvas id="personalScoreChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- 各科分值详情 -->
+                                <div class="chart-card journal-chart full-width">
+                                    <h3 class="chart-title">各科成绩详情</h3>
+                                    <div class="chart-description">
+                                        <p>以卡片形式展示各科详细成绩，包括分数、等级评定和排名信息</p>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="subject-cards-grid" id="personalScoreDetails">
+                                            <!-- 详细成绩将在这里显示 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 班级分析区域 -->
+        <section id="class" class="section">
+            <div class="class-container">
+                <div class="class-header">
+                    <h2><i class="fas fa-school"></i> 班级综合分析</h2>
+                    <div class="class-controls">
+                        <select id="selectedClassForAnalysis" onchange="loadClassAnalysis()">
+                            <option value="">选择班级</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="refreshClassAnalysis()">
+                            <i class="fas fa-sync-alt"></i> 刷新数据
+                        </button>
+                        <button class="btn btn-secondary" onclick="compareClasses()">
+                            <i class="fas fa-balance-scale"></i> 班级对比
+                        </button>
+                    </div>
+                </div>
+
+                <div class="class-analysis" id="classAnalysis">
+
+                    <!-- 班级基本信息 -->
+                    <div class="class-info-card">
+                        <div class="class-details">
+                            <h3 id="selectedClassName">请选择班级</h3>
+                            <div class="class-stats">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="classStudentCount">-</span>
+                                    <span class="stat-label">学生人数</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="classAverageScore">-</span>
+                                    <span class="stat-label">班级均分</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="classPassRate">-</span>
+                                    <span class="stat-label">整体及格率</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="classRanking">-</span>
+                                    <span class="stat-label">班级排名</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 班级分析图表 -->
+                    <div class="class-charts-grid">
+                        <!-- 班级各科均分及达成率 -->
+                        <div class="chart-card large">
+                            <div class="card-header">
+                                <h4><i class="fas fa-chart-bar"></i> 班级各科均分及达成率</h4>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="classSubjectChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 学生综合排名图 -->
+                        <div class="chart-card large">
+                            <div class="card-header">
+                                <h4><i class="fas fa-trophy"></i> 学生综合排名</h4>
+                                <div class="ranking-controls">
+                                    <label>显示排名区间：</label>
+                                    <select id="rankingRangeSelector" onchange="updateRankingDisplay()">
+                                        <option value="top10">前10名</option>
+                                        <option value="top20">前20名</option>
+                                        <option value="1-10">第1-10名</option>
+                                        <option value="11-20">第11-20名</option>
+                                        <option value="21-30">第21-30名</option>
+                                        <option value="31-40">第31-40名</option>
+                                        <option value="41-50">第41-50名</option>
+                                        <option value="bottom10">后10名</option>
+                                        <option value="all">全部学生</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-primary" onclick="toggleRankingSubjectSelector()" style="margin-left: 10px; color: #000;">
+                                        <i class="fas fa-filter"></i> 科目选择
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="exportRankingTable()" style="margin-left: 10px; color: #000;">
+                                        <i class="fas fa-download"></i> 导出排名表
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <!-- 科目选择器 -->
+                                <div id="rankingSubjectSelector" class="subject-selector" style="display: none; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                    <div class="selector-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                        <h5 style="margin: 0; color: #2c3e50;">选择参与排名的科目：</h5>
+                                        <div class="selector-controls">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="selectAllRankingSubjects()" style="margin-right: 5px; color: #000;">全选</button>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="clearAllRankingSubjects()" style="margin-right: 5px; color: #000;">全不选</button>
+                                            <button class="btn btn-sm btn-success" onclick="applyRankingSubjectSelection()" style="color: #000;">应用</button>
+                                        </div>
+                                    </div>
+                                    <div id="rankingSubjectCheckboxes" class="subject-checkboxes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                                        <!-- 科目复选框将在这里动态生成 -->
+                                    </div>
+                                    <div class="selection-info" style="margin-top: 10px; padding: 8px; background: #e3f2fd; border-radius: 4px; font-size: 14px; color: #1976d2;">
+                                        <span id="selectedRankingSubjectsCount">已选择 0 个科目</span>
+                                        <span id="selectedRankingSubjectsList" style="margin-left: 10px;"></span>
+                                    </div>
+                                </div>
+                                <canvas id="classRankingChart"></canvas>
+                                <div id="rankingStats" class="ranking-statistics"></div>
+                            </div>
+                        </div>
+
+                        <!-- 学生分科排名图 -->
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-medal"></i> 分科排名分布</h4>
+                                <select id="subjectRankingSelector" onchange="updateSubjectRanking()">
+                                    <option value="">选择科目</option>
+                                </select>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="subjectRankingChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 班级对比图 -->
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-chart-area"></i> 班级对比分析</h4>
+                                <div class="class-comparison-controls">
+                                    <select id="comparisonClass1" onchange="updateClassComparison()">
+                                        <option value="">选择班级1</option>
+                                    </select>
+                                    <span class="vs-text">VS</span>
+                                    <select id="comparisonClass2" onchange="updateClassComparison()">
+                                        <option value="">选择班级2</option>
+                                    </select>
+                                    <button class="btn btn-sm" onclick="resetComparison()">
+                                        <i class="fas fa-refresh"></i> 重置
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="classCompareChart"></canvas>
+                                <div id="comparisonStats" class="comparison-stats"></div>
+                            </div>
+                        </div>
+
+                        <!-- 成绩分布直方图 -->
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-chart-histogram"></i> 班级成绩分布</h4>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="classDistributionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 班级成绩箱型图 -->
+                        <div class="chart-card journal-chart">
+                            <h3 class="chart-title">班级成绩箱型图分析</h3>
+                            <div class="card-content box-plot-container">
+                                <canvas id="classBoxPlotChart"></canvas>
+                                <div class="box-plot-stats" id="boxPlotStats">
+                                    <!-- 统计数据将动态生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据导出区域 -->
+        <section id="reports" class="section">
+            <div class="reports-container">
+                <div class="reports-header">
+                    <h2><i class="fas fa-chart-bar"></i> 图表导出</h2>
+                    <p>右键保存图表，支持PNG格式</p>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <div class="report-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3>个人数据导出</h3>
+                        <p>导出单个学生的成绩数据和分析结果</p>
+                        <div class="student-selector">
+                            <div class="search-container">
+                                <input type="text" id="reportStudentSearch" class="form-input" placeholder="搜索学生姓名或班级..." autocomplete="off">
+                                <div id="reportSearchResults" class="search-results"></div>
+                            </div>
+                            <input type="hidden" id="selectedStudentId" value="">
+                            <div id="selectedStudent" class="selected-student"></div>
+                        </div>
+                        <button class="btn btn-primary" onclick="exportPersonalData()">
+                            <i class="fas fa-file-export"></i> 导出个人数据
+                        </button>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>图表保存说明</h3>
+                        <p>在数据分析页面，右键点击任意图表选择"保存图片"即可下载PNG格式的图表</p>
+                        <div class="chart-save-tips">
+                            <h4>保存步骤：</h4>
+                            <ol>
+                                <li>进入"数据分析"或"个人分析"页面</li>
+                                <li>找到需要保存的图表</li>
+                                <li>右键点击图表</li>
+                                <li>选择"保存图片"或"另存为图片"</li>
+                                <li>选择保存位置和文件名</li>
+                            </ol>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="report-preview" id="reportPreview" style="display: none;">
+                    <h3>报告预览</h3>
+                    <div class="preview-content">
+                        <!-- 报告预览内容将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <!-- 联表分析模态框 -->
+    <div id="jointAnalysisModal" class="modal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 90%; max-height: 90%; overflow-y: auto; background: linear-gradient(135deg, #ffffff 0%, #f8fcff 100%); border: 3px solid #667eea; box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px 15px 0 0;">
+                <h3 style="color: white; margin: 0;"><i class="fas fa-link" style="margin-right: 10px;"></i> 联表分析</h3>
+                <span class="close" onclick="closeJointAnalysisModal()" style="color: white; font-size: 28px; cursor: pointer; background: rgba(255,255,255,0.2); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 30px; max-height: 60vh; overflow-y: auto;">
+                <div class="analysis-options" style="background: linear-gradient(135deg, #ffffff 0%, #f8fcff 100%); padding: 25px; border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.15); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);">
+                    <div class="option-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #2c3e50; font-size: 16px;">
+                            <span style="color: #667eea; margin-right: 8px;">▸</span>分析类型：
+                        </label>
+                        <select id="analysisType" style="width: 100%; padding: 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 15px; background: linear-gradient(135deg, #ffffff 0%, #f8fcff 100%); color: #2c3e50; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <option value="correlation">科目相关性分析</option>
+                            <option value="comparison">班级对比分析</option>
+                            <option value="trend">成绩趋势分析</option>
+                        </select>
+                    </div>
+                    <div class="option-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #2c3e50; font-size: 16px;">
+                            <span style="color: #667eea; margin-right: 8px;">▸</span>选择科目：
+                        </label>
+                        <div id="subjectSelector" class="checkbox-group" style="background: rgba(102, 126, 234, 0.05); padding: 15px; border-radius: 8px;">
+                            <!-- 动态生成科目选择框 -->
+                        </div>
+                    </div>
+                    <div class="option-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #2c3e50; font-size: 16px;">
+                            <span style="color: #667eea; margin-right: 8px;">▸</span>选择班级：
+                        </label>
+                        <div id="classSelector" class="checkbox-group" style="background: rgba(102, 126, 234, 0.05); padding: 15px; border-radius: 8px;">
+                            <!-- 动态生成班级选择框 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions" style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(102, 126, 234, 0.05); border-radius: 10px;">
+                    <button class="btn btn-primary" onclick="performJointAnalysis()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; padding: 15px 30px; margin: 0 10px; border-radius: 25px; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                        <i class="fas fa-play"></i> 开始分析
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeJointAnalysisModal()" style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%); border: none; padding: 15px 30px; margin: 0 10px; border-radius: 25px; color: white; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);">
+                        取消
+                    </button>
+                </div>
+            </div>
+            <div class="modal-results" id="jointAnalysisResults" style="display: none; padding: 30px; max-height: 40vh; overflow-y: auto; border-top: 3px solid #667eea; background: linear-gradient(135deg, #f8fcff 0%, #ffffff 100%);">
+                <!-- 联表分析结果将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载动画 -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>正在处理数据...</p>
+        </div>
+    </div>
+
+
+    <script src="js/app.js"></script>
+</body>
+</html>
