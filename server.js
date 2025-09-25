@@ -93,16 +93,8 @@ app.get('/sample-single-class-with-rankings.csv', (req, res) => {
 });
 
 // 文件上传配置
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = './uploads';
-    fs.ensureDirSync(uploadDir);
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
+// 使用内存存储，适配Vercel无服务器环境
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -124,6 +116,10 @@ const upload = multer({
     } else {
       cb(new Error('只支持 Excel (.xlsx, .xls) 和 CSV 文件格式'));
     }
+  },
+  limits: {
+    fileSize: 4 * 1024 * 1024, // 4MB (Vercel限制)
+    fieldSize: 1024 * 1024 // 1MB字段大小限制
   }
 });
 
@@ -142,18 +138,22 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 文件上传
+// 文件上传 - 适配Vercel内存存储
 app.post('/upload', upload.single('gradeFile'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请选择文件' });
     }
 
-    const filePath = req.file.path;
-    const workbook = XLSX.readFile(filePath);
+    console.log('📁 文件上传开始:', req.file.originalname, '大小:', req.file.size);
+
+    // 从内存缓冲区读取文件
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    console.log('📊 解析到数据行数:', jsonData.length);
 
     // 处理上传的成绩数据
     const processedData = processGradeData(jsonData);
@@ -169,6 +169,8 @@ app.post('/upload', upload.single('gradeFile'), (req, res) => {
       Object.keys(student.originalRankings || {}).length > 0
     );
     
+    console.log('✅ 文件处理完成，返回结果');
+    
     res.json({
       success: true,
       message: hasAutoCalculatedRankings ? 
@@ -182,14 +184,12 @@ app.post('/upload', upload.single('gradeFile'), (req, res) => {
       }
     });
 
-    // 清理上传的文件
-    fs.unlink(filePath, (err) => {
-      if (err) console.log('清理临时文件失败:', err);
-    });
-
   } catch (error) {
-    console.error('文件处理错误:', error);
-    res.status(500).json({ error: '文件处理失败' });
+    console.error('❌ 文件处理错误:', error);
+    res.status(500).json({ 
+      error: '文件处理失败', 
+      details: error.message 
+    });
   }
 });
 
